@@ -143,8 +143,8 @@
       font-weight: 600;
       font-size: 0.78rem;
     }
-    table.data td:nth-child(3),
-    table.data th:nth-child(3) { text-align: right; }
+    table.data td:last-child,
+    table.data th:last-child { text-align: right; }
     table.data tr:hover td { background: rgba(255,255,255,0.03); }
     .pill {
       display: inline-block;
@@ -206,6 +206,18 @@
       border: 1px solid rgba(255,255,255,0.05);
     }
     .month-cell b { color: var(--accent2); }
+    .month-cell .ym-range {
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      font-size: 0.72rem;
+    }
+    table.data.triple-top30 td:nth-child(2),
+    table.data.triple-top30 th:nth-child(2) {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
     .table-scroll {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -339,8 +351,8 @@
     <section class="card">
       <h2>いちばん数字が上がっているところ</h2>
       <p>年月×営業×都道府県の<strong>件数トップ30</strong>（受注日 <strong>2023-05-01〜2026-04-30</strong> の成約のみ合算）。同数は年月→営業名→県名の順で並べています。</p>
-      <table class="data">
-        <thead><tr><th>順位</th><th>年月</th><th>営業担当</th><th>都道府県</th><th>件数</th></tr></thead>
+      <table class="data triple-top30">
+        <thead><tr><th>順位</th><th>年</th><th>月</th><th>営業担当</th><th>都道府県</th><th>件数</th></tr></thead>
         <tbody id="max-rows"></tbody>
       </table>
       <p class="note">1位は2024年3月・岡村・東京都の4件。受注日が2023-05〜2026-04に入る成約のみを年月ごとに集計。</p>
@@ -458,10 +470,10 @@
       `<tr><td>${i + 1}</td><td>${x[0]}</td><td>${x[1]}</td></tr>`).join("");
 
     document.getElementById("month-cells").innerHTML = months.map(x =>
-      `<div class="month-cell"><b>${x.m}月</b> … ${x.t}</div>`).join("");
+      `<div class="month-cell"><span class="ym-range">2023–2026</span> <b>${x.m}月</b> … ${x.t}</div>`).join("");
 
     document.getElementById("max-rows").innerHTML = tripleTop30.map(([rank, y, mo, s, p, n]) =>
-      `<tr><td>${rank}</td><td>${y}年${mo}月</td><td>${s}</td><td>${p}</td><td>${n}</td></tr>`).join("");
+      `<tr><td>${rank}</td><td>${y}</td><td>${mo}月</td><td>${s}</td><td>${p}</td><td>${n}</td></tr>`).join("");
 
     document.getElementById("month-top6").innerHTML = monthTop6.map(([r, m, n]) =>
       `<tr><td>${r}</td><td>${m}月</td><td>${n}</td></tr>`).join("");
