@@ -262,7 +262,7 @@
     <div class="grid grid-2" style="margin-bottom:1.25rem;">
       <section class="card">
         <h2>暦月別 · 本数トップ6</h2>
-        <p class="pill">受注日から · 上記3年ウィンドウ内のみを暦月（1〜12月）で合算</p>
+        <p class="pill">受注日が <strong>2023-05-01〜2026-04-30</strong> に入る成約のみ · 暦月（1〜12月）で件数を合算（398件の合計から再集計）</p>
         <table class="data">
           <thead><tr><th>順位</th><th>月</th><th>件数</th></tr></thead>
           <tbody id="month-top6"></tbody>
@@ -271,7 +271,7 @@
       </section>
       <section class="card">
         <h2>暦月別 · 本数ワースト6</h2>
-        <p class="pill">同上（件数が少ない順に6ヶ月）</p>
+        <p class="pill">左と同じ受注日範囲（2023-05-01〜2026-04-30）· 件数が少ない暦月から6ヶ月</p>
         <table class="data">
           <thead><tr><th>順位</th><th>月</th><th>件数</th></tr></thead>
           <tbody id="month-worst6"></tbody>
@@ -332,18 +332,18 @@
 
     <section class="card" style="margin-bottom:1.25rem;">
       <h2>月 × 営業 × 都道府県（複数年を暦月で合算）</h2>
-      <p class="pill">各月、件数が多かった組み合わせの例（トップ帯）· 3年ウィンドウ内のみ合算</p>
+      <p class="pill">各暦月の件数が多い組み合わせの例 · 受注日 <strong>2023-05-01〜2026-04-30</strong> のみ合算</p>
       <div class="month-grid" id="month-cells"></div>
     </section>
 
     <section class="card">
       <h2>いちばん数字が上がっているところ</h2>
-      <p><strong>最大は「5件」</strong>（上記3年ウィンドウ内）。同率1位の組み合わせは以下。</p>
+      <p><strong>最大は「5件」</strong>（受注日 2023-05-01〜2026-04-30）。同率1位の組み合わせは以下。</p>
       <table class="data">
         <thead><tr><th>月</th><th>営業担当</th><th>都道府県</th><th>件数</th></tr></thead>
         <tbody id="max-rows"></tbody>
       </table>
-      <p class="note">7月に高城×大阪府が5件で突出。暦月合算はウィンドウ内の受注のみ。</p>
+      <p class="note">7月に高城×大阪府が5件で突出。暦月合算は受注日が2023-05〜2026-04に入る成約のみ。</p>
     </section>
 
     <footer>
@@ -407,8 +407,8 @@
     const maxFour = [
       [7, "高城", "大阪府", 5]
     ];
-    const monthTop6 = [[1, 3, 56], [2, 4, 48], [3, 5, 40], [4, 7, 39], [5, 6, 31], [5, 11, 31]];
-    const monthWorst6 = [[1, 1, 20], [2, 2, 24], [2, 10, 24], [4, 8, 26], [5, 9, 29], [6, 12, 30]];
+    const monthTop6 = [[1, 3, 56], [2, 4, 48], [3, 5, 40], [4, 7, 39], [5, 6, 31], [5, 11, 31]]; /* 受注日 2023-05〜2026-04 の暦月合算 */
+    const monthWorst6 = [[1, 1, 20], [2, 2, 24], [2, 10, 24], [4, 8, 26], [5, 9, 29], [6, 12, 30]]; /* 同上 */
     /** [年月, 営業トップ, 営業本数, アポトップ, アポ本数, 月間成約] — 0件の月は描画時に除外 */
     const monthlyLeaders = [
       ["2024-03", "安齋・高城", 6, "中村", 4, 18],
