@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>成約分析スナップショット（集計図解）</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --panel2: #243044;
+      --text: #e8eef7;
+      --muted: #9db0c9;
+      --accent: #3d9cf0;
+      --accent2: #5ce1c5;
+      --warn: #f0b429;
+      --danger: #ff6b6b;
+      --bar-bg: #2a3548;
+      --radius: 12px;
+      --font: "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: radial-gradient(ellipse 120% 80% at 50% -20%, #1e3a5f 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    header h1 {
+      font-size: clamp(1.35rem, 3vw, 1.85rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin: 0 0 0.5rem;
+    }
+    header p {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.92rem;
+    }
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), #7c5cff);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.06em;
+    }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+    }
+    @media (min-width: 860px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    }
+    section.card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 1.35rem 1.4rem;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+    section.card h2 {
+      margin: 0 0 1rem;
+      font-size: 1.05rem;
+      color: var(--accent2);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    section.card h2::before {
+      content: "";
+      width: 4px;
+      height: 1.1em;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    .note {
+      font-size: 0.82rem;
+      color: var(--warn);
+      background: rgba(240, 180, 41, 0.1);
+      border-left: 3px solid var(--warn);
+      padding: 0.65rem 0.85rem;
+      border-radius: 0 8px 8px 0;
+      margin: 0.75rem 0 0;
+    }
+    .note.danger {
+      color: #ffb4b4;
+      background: rgba(255,107,107,0.12);
+      border-left-color: var(--danger);
+    }
+    /* horizontal bar */
+    .hbar-list { display: flex; flex-direction: column; gap: 0.65rem; margin-top: 0.5rem; }
+    .hbar {
+      display: grid;
+      grid-template-columns: 5.5rem 1fr 2.5rem;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+    }
+    .hbar .name { color: var(--muted); }
+    .hbar .track {
+      height: 22px;
+      background: var(--bar-bg);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .hbar .fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      min-width: 4px;
+    }
+    .hbar .num { text-align: right; font-weight: 700; color: var(--text); }
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      margin-top: 0.5rem;
+    }
+    table.data th,
+    table.data td {
+      padding: 0.45rem 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    table.data th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+    table.data td:nth-child(3),
+    table.data th:nth-child(3) { text-align: right; }
+    table.data tr:hover td { background: rgba(255,255,255,0.03); }
+    .pill {
+      display: inline-block;
+      background: var(--panel2);
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .flow .step {
+      flex: 1 1 140px;
+      background: var(--panel2);
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .flow .step strong { color: var(--accent2); display: block; margin-bottom: 0.2rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    footer code {
+      background: var(--panel2);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+    details.share {
+      margin-top: 1rem;
+      background: var(--panel2);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    details.share summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+    .month-grid {
+      display: grid;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+    }
+    @media (min-width: 700px) {
+      .month-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .month-cell {
+      background: var(--panel2);
+      padding: 0.55rem 0.65rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .month-cell b { color: var(--accent2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="badge">RUNBIRD · IT ナレッジ</div>
+      <h1>成約分析スナップショット</h1>
+      <p>「営業・アポ トップ3」の質問以降に Cursor で集計した内容を HTML/CSS のみで図解（外部ライブラリなし）。ローカルは <code>http://127.0.0.1:8765/cheng-yaku-dashboard.html</code>（<code>scripts/serve-dashboard.cmd</code> 起動時）。GitHub で外部 URL 化する手順は <code>share/public-dashboard-site/README.md</code>（中身を <strong>Public</strong> リポジトリのルートへコピーして push）。</p>
+    </header>
+
+    <div class="grid grid-2" style="margin-bottom:1.25rem;">
+      <section class="card">
+        <h2>営業担当 · 件数トップ3</h2>
+        <p class="pill">対象: ナレッジ/成約分析 の個別 .md 406件中 表のある405件程度</p>
+        <div class="hbar-list" id="sales-bars"></div>
+        <p class="note">「髙城」と「高城」は別表記で1件あるため、実務では統合すると <strong>高城 160件相当</strong>。</p>
+      </section>
+      <section class="card">
+        <h2>アポ担当 · 件数トップ3</h2>
+        <div class="hbar-list" id="apo-bars"></div>
+        <p class="note">2位タイ: 永野・濱島が同数（50件）。</p>
+      </section>
+    </div>
+
+    <section class="card" style="margin-bottom:1.25rem;">
+      <h2>都道府県トップ10</h2>
+      <p class="pill">取込サマリー.md を除外 · 県名なしの市は簡易マッピング（川越市→埼玉県 等）</p>
+      <table class="data">
+        <thead><tr><th>順位</th><th>都道府県</th><th>件数</th></tr></thead>
+        <tbody id="pref-rows"></tbody>
+      </table>
+    </section>
+
+    <div class="grid grid-2" style="margin-bottom:1.25rem;">
+      <section class="card">
+        <h2>業種（表記そのまま）トップ10</h2>
+        <p class="pill">265種類の表記ゆれあり</p>
+        <table class="data">
+          <thead><tr><th>順位</th><th>業種フィールド</th><th>件数</th></tr></thead>
+          <tbody id="gyo-raw"></tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h2>業種（キーワード粗分類）トップ10</h2>
+        <p class="pill">境界は目安</p>
+        <table class="data">
+          <thead><tr><th>順位</th><th>粗カテゴリ</th><th>件数</th></tr></thead>
+          <tbody id="gyo-bucket"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card" style="margin-bottom:1.25rem;">
+      <h2>飲食・外食バケット（74件）の内訳</h2>
+      <div class="flow">
+        <div class="step"><strong>最多</strong>「飲食業」「飲食」「飲食店」だけで約28件。ジャンル未指定が突出。</div>
+        <div class="step"><strong>次点</strong>バー・居酒屋・カラオケバー系で十件前後の塊。</div>
+        <div class="step"><strong>その他</strong>カフェ／ボードゲームカフェが数件ずつ。細かい屋号は1件ずつが多い。</div>
+      </div>
+      <p class="note danger">ルールベースのため「洗車 アミューズメント」のように飲食以外が混ざる可能性あり。厳密にはマスタ再タグ付け推奨。</p>
+    </section>
+
+    <section class="card" style="margin-bottom:1.25rem;">
+      <h2>月 × 営業 × 都道府県（複数年を暦月で合算）</h2>
+      <p class="pill">各月、件数が多かった組み合わせの例（トップ帯）</p>
+      <div class="month-grid" id="month-cells"></div>
+    </section>
+
+    <section class="card">
+      <h2>いちばん数字が上がっているところ</h2>
+      <p><strong>最大は「4件」</strong>（それ以上はデータ上なし）。同率1位の組み合わせは以下。</p>
+      <table class="data">
+        <thead><tr><th>月</th><th>営業担当</th><th>都道府県</th><th>件数</th></tr></thead>
+        <tbody id="max-rows"></tbody>
+      </table>
+      <p class="note">3月に同率1位が集中。12月3位の「濱島」は CSV 上は営業担当列の値（表記確認向き）。</p>
+    </section>
+
+    <footer>
+      <p><strong>GitHub で外部 URL 化（確実なやり方: Public ミニリポ）</strong></p>
+      <ol style="margin:0.5rem 0 0 1.1rem; padding:0;">
+        <li>親リポジトリの <code>share/public-dashboard-site/</code> の<strong>中身すべて</strong>を、新規の <strong>Public</strong> リポジトリの<strong>ルート</strong>にコピーして push（<code>index.html</code> と <code>.github/workflows/deploy-github-pages.yml</code> がルートに来る形）。</li>
+        <li>その Public リポで <strong>Settings → Pages</strong> → Source を <strong>GitHub Actions</strong> にする。</li>
+        <li>Actions の「Deploy GitHub Pages」成功後、表示される <code>https://&lt;ユーザー名&gt;.github.io/&lt;公開リポ名&gt;/</code> を共有する（このファイルを <code>index.html</code> にしているのでトップで開きます）。</li>
+        <li>図解を更新したら <code>scripts/sync-public-dashboard.ps1</code> で <code>share/public-dashboard-site/index.html</code> を差し替え、公開リポへ再 push。</li>
+      </ol>
+      <p><strong>親リポジトリだけで Pages を試す場合（参考）</strong></p>
+      <p style="margin:0.35rem 0 0; font-size:0.85rem;">Private のままだと無料 Organization では 404 になりやすいです。手順の詳細は <code>docs/PAGES-SETUP.md</code>。</p>
+      <p class="note danger" style="margin-top:0.75rem;"><strong>404 が消えないとき:</strong> リポジトリが <strong>Private</strong> だと無料プランでは <strong>github.io の公開サイトが出ません</strong>。<strong>上の「Public ミニリポ」</strong>か Netlify 等を使ってください。</p>
+      <details class="share">
+        <summary>プレビューだけ素早く見せたいとき</summary>
+        <p style="margin:0.5rem 0 0;">GitHub の raw URL では HTML はレンダリングされない。Pages が無い場合は htmlpreview 等のプレビューサービスを利用するか、ファイルを zip で渡す。</p>
+      </details>
+    </footer>
+  </div>
+
+  <script>
+    const sales = [
+      { name: "高城", n: 159, max: 159 },
+      { name: "吉村", n: 55, max: 159 },
+      { name: "齋藤", n: 45, max: 159 }
+    ];
+    const apo = [
+      { name: "下堂薗", n: 57, max: 57 },
+      { name: "永野", n: 50, max: 57 },
+      { name: "濱島", n: 50, max: 57 }
+    ];
+    const pref = [
+      [1, "東京都", 65], [2, "神奈川県", 45], [3, "沖縄県", 41], [4, "埼玉県", 36],
+      [5, "千葉県", 32], [6, "福岡県", 22], [7, "大阪府", 20], [8, "群馬県", 19],
+      [9, "茨城県", 17], [10, "広島県", 17]
+    ];
+    const gyoRaw = [
+      ["飲食業", 19], ["美容", 6], ["飲食", 6], ["健康業 パーソナルジム", 6],
+      ["サービス業", 5], ["美容業 ネイルサロン", 5], ["美容業 エステサロン", 5],
+      ["健康業", 4], ["美容業 ヘアサロン", 4], ["健康", 4]
+    ];
+    const gyoB = [
+      ["美容・理美容サロン系", 108], ["飲食・外食・関連", 74], ["その他・複合・サービス", 61],
+      ["健康・整体・ジム・リラク系", 43], ["小売・物販・アパレル系", 40], ["建設・工事・リフォーム系", 20],
+      ["自動車・バイク整備系", 15], ["ペット・動物系", 15], ["教育・習い事系", 10],
+      ["占い・相談・婚活系", 10]
+    ];
+    const months = [
+      { m: 1, t: "吉村×神奈川2 / 高城×神奈川2 / 高城×千葉2" },
+      { m: 2, t: "吉村×沖縄3 / 齋藤×千葉3 / 高城×広島3" },
+      { m: 3, t: "岡村×東京4 / 高城×東京4 / 高城×埼玉4 …" },
+      { m: 4, t: "岡村×東京3 / 高城×群馬3 / 高城×静岡3" },
+      { m: 5, t: "岡村×兵庫3 / 岡村×神奈川3 / 高城×広島3" },
+      { m: 6, t: "吉村×沖縄3 / 岡村×沖縄3 / 高城×東京3" },
+      { m: 7, t: "高城×大阪4 / 齋藤×大阪4 / 高城×神奈川3" },
+      { m: 8, t: "高城×東京3 / 高城×岩手3 / 高城×福島3" },
+      { m: 9, t: "高城×福岡4 / 齋藤×千葉3 / 高城×沖縄3" },
+      { m: 10, t: "宮内×沖縄3 / 吉村×佐賀3 / 永野×東京3" },
+      { m: 11, t: "永野×沖縄4 / 高城×栃木3 / 野上×福岡3" },
+      { m: 12, t: "野上×福岡4 / 冨鶴兄×東京3 / 濱島×大阪3" }
+    ];
+    const maxFour = [
+      [3, "岡村", "東京都", 4], [3, "高城", "東京都", 4], [3, "高城", "埼玉県", 4],
+      [3, "吉村", "沖縄県", 4], [3, "高城", "大阪府", 4], [3, "冨鶴兄", "神奈川県", 4],
+      [3, "野上", "福岡県", 4], [7, "高城", "大阪府", 4], [7, "齋藤", "大阪府", 4],
+      [9, "高城", "福岡県", 4], [11, "永野", "沖縄県", 4], [12, "野上", "福岡県", 4]
+    ];
+
+    function bars(id, rows) {
+      const el = document.getElementById(id);
+      const max = rows[0].max || Math.max(...rows.map(r => r.n));
+      el.innerHTML = rows.map(r => {
+        const pct = Math.round((r.n / max) * 100);
+        return `<div class="hbar"><span class="name">${r.name}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span class="num">${r.n}</span></div>`;
+      }).join("");
+    }
+    bars("sales-bars", sales);
+    bars("apo-bars", apo);
+
+    document.getElementById("pref-rows").innerHTML = pref.map(([r, name, n]) =>
+      `<tr><td>${r}</td><td>${name}</td><td>${n}</td></tr>`).join("");
+
+    const gMax = Math.max(...gyoRaw.map(x => x[1]));
+    document.getElementById("gyo-raw").innerHTML = gyoRaw.map((x, i) =>
+      `<tr><td>${i + 1}</td><td>${x[0]}</td><td>${x[1]}</td></tr>`).join("");
+    document.getElementById("gyo-bucket").innerHTML = gyoB.map((x, i) =>
+      `<tr><td>${i + 1}</td><td>${x[0]}</td><td>${x[1]}</td></tr>`).join("");
+
+    document.getElementById("month-cells").innerHTML = months.map(x =>
+      `<div class="month-cell"><b>${x.m}月</b> … ${x.t}</div>`).join("");
+
+    document.getElementById("max-rows").innerHTML = maxFour.map(([mo, s, p, n]) =>
+      `<tr><td>${mo}月</td><td>${s}</td><td>${p}</td><td>${n}</td></tr>`).join("");
+  </script>
+</body>
+</html>
