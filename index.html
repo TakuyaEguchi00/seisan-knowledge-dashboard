@@ -206,6 +206,26 @@
       border: 1px solid rgba(255,255,255,0.05);
     }
     .month-cell b { color: var(--accent2); }
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 0.5rem;
+    }
+    table.data.leaders {
+      font-size: 0.78rem;
+      min-width: 640px;
+    }
+    table.data.leaders td:nth-child(5),
+    table.data.leaders th:nth-child(5),
+    table.data.leaders td:nth-child(6),
+    table.data.leaders th:nth-child(6) { text-align: right; }
+    table.data.leaders td:nth-child(2),
+    table.data.leaders th:nth-child(2),
+    table.data.leaders td:nth-child(4),
+    table.data.leaders th:nth-child(4) {
+      word-break: break-word;
+      max-width: 14rem;
+    }
   </style>
 </head>
 <body>
@@ -259,6 +279,27 @@
         <p class="note">2位タイ: 2月と10月が同数（24件）。</p>
       </section>
     </div>
+
+    <section class="card" style="margin-bottom:1.25rem;">
+      <h2>年月別 · 営業トップ／アポトップ（本数付き）</h2>
+      <p class="pill">受注日ベース · データ最古の月（2024-03）〜2026-04 · 成約分析 .md（サマリー除外）· 髙城→高城</p>
+      <div class="table-scroll">
+        <table class="data leaders">
+          <thead>
+            <tr>
+              <th>年月</th>
+              <th>営業担当トップ（同率は「・」）</th>
+              <th>営業本数</th>
+              <th>アポ担当トップ（同率は「・」）</th>
+              <th>アポ本数</th>
+              <th>月間成約</th>
+            </tr>
+          </thead>
+          <tbody id="monthly-leaders-rows"></tbody>
+        </table>
+      </div>
+      <p class="note">同月で同数1位が複数いる場合はすべて表示。2025-10（アポ）・2026-02（営業）は同率が多い月です。</p>
+    </section>
 
     <div class="grid grid-2" style="margin-bottom:1.25rem;">
       <section class="card">
@@ -372,6 +413,35 @@
     ];
     const monthTop6 = [[1, 3, 56], [2, 4, 48], [3, 5, 46], [4, 7, 39], [5, 6, 31], [5, 11, 31]];
     const monthWorst6 = [[1, 1, 20], [2, 2, 24], [2, 10, 24], [4, 8, 26], [5, 9, 29], [6, 12, 30]];
+    /** [年月, 営業トップ名（・連結）, 営業本数, アポトップ名, アポ本数, 月間成約件数] */
+    const monthlyLeaders = [
+      ["2024-03", "安齋・高城", 6, "中村", 4, 18],
+      ["2024-04", "高城・岡村", 7, "武藤・宮内", 4, 17],
+      ["2024-05", "高城", 12, "宮内", 6, 25],
+      ["2024-06", "岡村", 6, "濱島", 5, 18],
+      ["2024-07", "高城", 11, "永野", 5, 22],
+      ["2024-08", "高城", 12, "中村", 6, 17],
+      ["2024-09", "安齋", 6, "中村", 3, 14],
+      ["2024-10", "齋藤・高城・宮内", 3, "栗山", 3, 9],
+      ["2024-11", "高城", 8, "下堂薗", 4, 12],
+      ["2024-12", "高城", 3, "今坂", 3, 7],
+      ["2025-01", "高城", 6, "濱島", 4, 9],
+      ["2025-02", "高城", 8, "下堂薗", 7, 16],
+      ["2025-03", "高城", 4, "窪田・今坂", 3, 10],
+      ["2025-04", "高城", 7, "下堂薗", 4, 11],
+      ["2025-05", "吉村・高城", 5, "窪田", 4, 15],
+      ["2025-06", "高城", 8, "今坂", 5, 13],
+      ["2025-07", "吉村", 7, "下堂薗・今坂", 4, 17],
+      ["2025-08", "高城・濱島", 3, "永野・今坂", 3, 9],
+      ["2025-09", "高城", 8, "窪田", 5, 15],
+      ["2025-10", "吉村", 7, "窪田・今坂・永野・下堂薗・SH渡邉・冨鶴・岩崎", 2, 15],
+      ["2025-11", "野上", 5, "濱島", 5, 19],
+      ["2025-12", "冨鶴兄・濱島", 5, "今坂・冨鶴弟", 4, 23],
+      ["2026-01", "高城", 3, "下堂薗", 3, 11],
+      ["2026-02", "濱島・今坂・窪田・齋藤・冨鶴兄・野上・吉村・高城", 1, "下堂薗", 2, 8],
+      ["2026-03", "高城", 12, "下堂薗", 5, 28],
+      ["2026-04", "高城", 7, "下堂薗", 6, 20]
+    ];
 
     function bars(id, rows) {
       const el = document.getElementById(id);
@@ -403,6 +473,11 @@
       `<tr><td>${r}</td><td>${m}月</td><td>${n}</td></tr>`).join("");
     document.getElementById("month-worst6").innerHTML = monthWorst6.map(([r, m, n]) =>
       `<tr><td>${r}</td><td>${m}月</td><td>${n}</td></tr>`).join("");
+
+    document.getElementById("monthly-leaders-rows").innerHTML = monthlyLeaders.map(
+      ([ym, salesNames, salesN, apoNames, apoN, monthTotal]) =>
+        `<tr><td>${ym}</td><td>${salesNames}</td><td>${salesN}</td><td>${apoNames}</td><td>${apoN}</td><td>${monthTotal}</td></tr>`
+    ).join("");
   </script>
 </body>
 </html>
