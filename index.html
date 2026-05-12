@@ -282,7 +282,7 @@
 
     <section class="card" style="margin-bottom:1.25rem;">
       <h2>年月別 · 営業トップ／アポトップ（本数付き）</h2>
-      <p class="pill">受注日ベース · 2023-05〜2026-04 の各年月（計36ヶ月。未収集の月は0件）· サマリー除外 · 髙城→高城</p>
+      <p class="pill">受注日ベース · 枠は2023-05〜2026-04（3年）· <strong>成約があった年月のみ表示</strong>（0件の月は省略）· サマリー除外 · 髙城→高城</p>
       <div class="table-scroll">
         <table class="data leaders">
           <thead>
@@ -298,7 +298,7 @@
           <tbody id="monthly-leaders-rows"></tbody>
         </table>
       </div>
-      <p class="note">同月で同数1位が複数いる場合はすべて表示。<strong>2023-05〜2024-02</strong>はフォルダに該当 .md が無く0件。2025-10（アポ）・2026-02（営業）は同率が多い月です。</p>
+      <p class="note">同月で同数1位が複数いる場合はすべて表示。<strong>2023-05〜2024-02</strong>はナレッジに該当 .md が無いため成約0件（表では省略）。2025-10（アポ）・2026-02（営業）は同率が多い月です。</p>
     </section>
 
     <div class="grid grid-2" style="margin-bottom:1.25rem;">
@@ -409,18 +409,8 @@
     ];
     const monthTop6 = [[1, 3, 56], [2, 4, 48], [3, 5, 40], [4, 7, 39], [5, 6, 31], [5, 11, 31]];
     const monthWorst6 = [[1, 1, 20], [2, 2, 24], [2, 10, 24], [4, 8, 26], [5, 9, 29], [6, 12, 30]];
-    /** [年月, 営業トップ名（・連結）, 営業本数, アポトップ名, アポ本数, 月間成約件数] — 2023-05〜2026-04 の36ヶ月 */
+    /** [年月, 営業トップ, 営業本数, アポトップ, アポ本数, 月間成約] — 0件の月は描画時に除外 */
     const monthlyLeaders = [
-      ["2023-05", "", 0, "", 0, 0],
-      ["2023-06", "", 0, "", 0, 0],
-      ["2023-07", "", 0, "", 0, 0],
-      ["2023-08", "", 0, "", 0, 0],
-      ["2023-09", "", 0, "", 0, 0],
-      ["2023-10", "", 0, "", 0, 0],
-      ["2023-11", "", 0, "", 0, 0],
-      ["2023-12", "", 0, "", 0, 0],
-      ["2024-01", "", 0, "", 0, 0],
-      ["2024-02", "", 0, "", 0, 0],
       ["2024-03", "安齋・高城", 6, "中村", 4, 18],
       ["2024-04", "高城・岡村", 7, "武藤・宮内", 4, 17],
       ["2024-05", "高城", 12, "宮内", 6, 25],
@@ -480,10 +470,11 @@
     document.getElementById("month-worst6").innerHTML = monthWorst6.map(([r, m, n]) =>
       `<tr><td>${r}</td><td>${m}月</td><td>${n}</td></tr>`).join("");
 
-    document.getElementById("monthly-leaders-rows").innerHTML = monthlyLeaders.map(
-      ([ym, salesNames, salesN, apoNames, apoN, monthTotal]) =>
-        `<tr><td>${ym}</td><td>${salesNames}</td><td>${salesN}</td><td>${apoNames}</td><td>${apoN}</td><td>${monthTotal}</td></tr>`
-    ).join("");
+    document.getElementById("monthly-leaders-rows").innerHTML = monthlyLeaders
+      .filter((row) => row[5] > 0)
+      .map(([ym, salesNames, salesN, apoNames, apoN, monthTotal]) =>
+        `<tr><td>${ym}</td><td>${salesNames || "—"}</td><td>${salesN}</td><td>${apoNames || "—"}</td><td>${apoN}</td><td>${monthTotal}</td></tr>`
+      ).join("");
   </script>
 </body>
 </html>
