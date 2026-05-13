@@ -20,13 +20,28 @@
       --font: "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
     }
     * { box-sizing: border-box; }
+    html {
+      background-color: #0f1419;
+      color: #e8eef7;
+    }
     body {
       margin: 0;
       font-family: var(--font);
+      background-color: #0f1419;
       background: radial-gradient(ellipse 120% 80% at 50% -20%, #1e3a5f 0%, var(--bg) 55%);
       color: var(--text);
       line-height: 1.55;
       min-height: 100vh;
+    }
+    @media (forced-colors: active) {
+      html, body {
+        background: Canvas;
+        color: CanvasText;
+      }
+      section.card {
+        background: Canvas;
+        border-color: CanvasText;
+      }
     }
     .wrap {
       max-width: 1100px;
@@ -241,6 +256,11 @@
   </style>
 </head>
 <body>
+  <noscript>
+    <div style="margin:1rem;padding:1rem;background:#1a2332;color:#e8eef7;font-family:system-ui,sans-serif;border-radius:8px;">
+      このダッシュボードはブラウザの <strong>JavaScript</strong> で表を描画しています。JavaScript を有効にして再読み込みしてください。
+    </div>
+  </noscript>
   <div class="wrap">
     <header>
       <div class="badge">RUNBIRD · IT ナレッジ</div>
@@ -379,6 +399,8 @@
   </div>
 
   <script>
+  (function () {
+    try {
     const sales = [
       { name: "高城", n: 158, max: 158 },
       { name: "吉村", n: 54, max: 158 },
@@ -449,6 +471,7 @@
 
     function bars(id, rows) {
       const el = document.getElementById(id);
+      if (!el || !rows || !rows.length) return;
       const max = rows[0].max || Math.max(...rows.map(r => r.n));
       el.innerHTML = rows.map(r => {
         const pct = Math.round((r.n / max) * 100);
@@ -483,6 +506,17 @@
       .map(([ym, salesNames, salesN, apoNames, apoN, monthTotal]) =>
         `<tr><td>${ym}</td><td>${salesNames || "—"}</td><td>${salesN}</td><td>${apoNames || "—"}</td><td>${apoN}</td><td>${monthTotal}</td></tr>`
       ).join("");
+    } catch (err) {
+      var msg = (err && err.message) ? String(err.message) : String(err);
+      document.body.insertAdjacentHTML(
+        "afterbegin",
+        "<div id=\"dash-load-error\" style=\"margin:0;padding:12px 16px;background:#5c1f1f;color:#fff;font-family:system-ui,sans-serif;font-size:14px;\">" +
+          "<strong>表示でエラーが出ました。</strong> 開発者ツール（F12）のコンソールも確認してください。 " +
+          msg.replace(/</g, "&lt;") +
+          "</div>"
+      );
+    }
+  })();
   </script>
 </body>
 </html>
